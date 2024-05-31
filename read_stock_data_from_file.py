@@ -18,6 +18,7 @@ try:
         lines = f.read().splitlines()
     print('opened file for ticker: ', ticker)
 
+    # Question 1:
     # Read the CSV file into a DataFrame
     df = pd.read_csv(ticker_file)
 
@@ -32,6 +33,19 @@ try:
     output_file = os.path.join(input_dir, ticker + '_trueLabeled.csv')
     df.to_csv(output_file, index=False)
     print('Saved labeled data to file:', output_file)
+
+    # Question 2:
+    up = 0
+    down = 0
+    # Loop through each row in the DataFrame to count "up" and "down" days
+    for i in range(len(df)):
+        if (df.loc[i, 'True Label'] == '+'):
+            up += 1
+        else:
+            down += 1
+    # Calculate the probability that the next day is an "up" day
+    up_probability = round((up/(up+down)) * 100,2)
+    print(f"Probability p that the next day is a ”up” day is {up_probability}%")
 
 
 except Exception as e:
