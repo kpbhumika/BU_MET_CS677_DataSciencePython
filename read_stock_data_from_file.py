@@ -64,7 +64,7 @@ def consecutive_down_up_probability(df):
         consecutive_down = 0
 
         for i in range(len(df)):
-            if df.loc[i, 'True Label'] == '−':  # Check for "down" day
+            if df.loc[i, 'True Label'] == '-':  # Check for "down" day
                 consecutive_down += 1
             else:
                 if consecutive_down == k:  # Found k consecutive "down" days
@@ -114,7 +114,7 @@ def find_previous_pattern(w:int, index:int, df:pd.Series )->str:
     starting_index = int(df.index[0])
     if(index<starting_index + w):
         return
-    return "".join(df.loc[index-w:index])
+    return "".join(df.loc[index-w:index-1])
 
 
 def compute_predicted_labels(training_df:pd.DataFrame, testing_df:pd.DataFrame, w):
@@ -195,8 +195,8 @@ for w in W_values:
         max_accuracy_SPY['max_accuracy'] = accuracy_SPY
         max_accuracy_SPY['w'] = w
 
-    print(f"Highest accuracy for stock KR is {max_accuracy_KR['max_accuracy']} for W={max_accuracy_KR['w']}")
-    print(f"Highest accuracy for stock SPY is {max_accuracy_SPY['max_accuracy']} for W={max_accuracy_SPY['w']}")
+    print(f"Highest accuracy for stock KR is {round(max_accuracy_KR['max_accuracy'],2)}% for W={max_accuracy_KR['w']}")
+    print(f"Highest accuracy for stock SPY is {round(max_accuracy_SPY['max_accuracy'],2)}% for W={max_accuracy_SPY['w']}")
 
 
 
