@@ -26,7 +26,7 @@ def add_true_label(df):
         if df.loc[i, 'Return'] >= 0:
             df.loc[i, 'True Label'] = '+'
         else:
-            df.loc[i, 'True Label'] = '−'
+            df.loc[i, 'True Label'] = '-'
     return df
 
 df_KR = add_true_label(df_KR)
@@ -110,44 +110,51 @@ def consecutive_up_up_probability(df):
 
 # Question 2: Predicting labels
 
-def find_previous_pattern(w:int, index:int, true_labels:list )->str:
-    if(index<w):
+def find_previous_pattern(w:int, index:int, df:pd.Series )->str:
+    starting_index = int(df.index[0])
+    if(index<starting_index + w):
         return
-    return "".join(true_labels[index-w:index])
+    return "".join(df.loc[index-w:index])
 
 
-def compute_predicted_labels(training_df, testing_df, w):
-    training_labels = training_df['True Label'].tolist()
+def compute_predicted_labels(training_df:pd.DataFrame, testing_df:pd.DataFrame, w):
+    # training_labels = training_df['True Label'].tolist()
     predict_labels_count_map = {} # "--":{"+count":0,"-count":0}
-    for index in  range (len(training_labels)):
-        current_label = training_labels[index]
-        pattern = find_previous_pattern(w,index,training_labels)
+    for index in  training_df.index:
+        current_label = training_df['True Label'][index]
+        pattern = find_previous_pattern(w,index,training_df['True Label'])
         if pattern is None:
             continue
         if(pattern not in predict_labels_count_map):
             predict_labels_count_map[pattern]={"+count":0,"-count":0}
 
         pattern_count = predict_labels_count_map[pattern]
-        if(current_label == "+"):
+        if(current_label == '+'):
             pattern_count["+count"] += 1
         else:
             pattern_count["-count"] += 1
 
     # Assign predicted labels for testing data
-    testing_labels = testing_df['True Label'].tolist()
-    for index,label in enumerate(testing_labels):
-        pattern_value = find_previous_pattern(w,index,testing_labels)
+
+    for index in testing_df.index:
+        pattern_value = find_previous_pattern(w,index,testing_df['True Label'])
         if(pattern_value not in predict_labels_count_map):
-            testing_df.loc[index,'Predicted label'] = "to do" #to do
+            testing_df.loc[index,'Predicted label'] = '+' #default probability
             continue
         if(predict_labels_count_map[pattern_value]["+count"] >= predict_labels_count_map[pattern_value]["-count"]):
-            testing_df.loc[index,'Predicted label'] = "+"
+            testing_df.loc[index,'Predicted label'] = '+'
         else:
-            testing_df.loc[index,'Predicted label'] = "-"
+            testing_df.loc[index,'Predicted label'] = '-'
     return testing_df
 
-
-
+# Compute the accuracy
+def  compute_accuracy(df):
+    total_samples = len(df)
+    correct_predictions = (df['True Label'] == df['Predicted label']).sum()
+    print("correct_predictions",correct_predictions)
+    accuracy = correct_predictions / total_samples * 100
+    print(f"Accuracy: {accuracy:.2f}%")
+    return accuracy
 
 print("KR stock:")
 up_probability(training_stock_df_KR)
@@ -162,18 +169,34 @@ consecutive_up_up_probability(training_stock_df_SPY)
 
 
 W_values = [2, 3, 4]
-print("testing_stock_df_KR\n",testing_stock_df_KR)
-testing_stock_df_KR = compute_predicted_labels(training_stock_df_KR, testing_stock_df_KR, 3 )
-print("testing_stock_df_KR\n",testing_stock_df_KR)
-#print(testing_stock_df_KR[['Date', 'True Label', 'Predicted label']].tail())
-# for w in W_values:
-#     print(f"\nPredicting labels for KR with W={w}:")
-    # testing_stock_df_KR = compute_predicted_labels(training_stock_df_KR, testing_stock_df_KR, 3 )
-    # print(testing_stock_df_KR[['Date', 'True Label', 'Predicted label']].tail())
 
-    # print(f"\nPredicting labels for SPY with W={W}:")
-    # testing_stock_df_SPY = compute_predicted_labels(training_stock_df_SPY, testing_stock_df_SPY, W)
-    # print(testing_stock_df_SPY[['Date', 'True Label', 'Predicted Label']].tail())
+testing_stock_df_KR_copy = testing_stock_df_KR.copy()
+testing_stock_df_SPY_copy = testing_stock_df_SPY.copy()
+
+max_accuracy_KR = {'max_accuracy': -1, 'w': None}
+max_accuracy_SPY = {'max_accuracy': -1, 'w': None}
+
+for w in W_values:
+    print(f"\nPredicting labels for KR with W={w}:")
+    testing_stock_df_KR = compute_predicted_labels(training_stock_df_KR, testing_stock_df_KR_copy, w )
+    print(testing_stock_df_KR)
+    accuracy_KR = compute_accuracy(testing_stock_df_KR)
+
+    if accuracy_KR > max_accuracy_KR['max_accuracy']:
+        max_accuracy_KR['max_accuracy'] = accuracy_KR
+        max_accuracy_KR['w'] = w
+
+    print(f"\nPredicting labels for SPY with W={w}:")
+    testing_stock_df_SPY = compute_predicted_labels(training_stock_df_SPY, testing_stock_df_SPY_copy, w)
+    print(testing_stock_df_SPY)
+    accuracy_SPY = compute_accuracy(testing_stock_df_SPY)
+
+    if accuracy_SPY > max_accuracy_SPY['max_accuracy']:
+        max_accuracy_SPY['max_accuracy'] = accuracy_SPY
+        max_accuracy_SPY['w'] = w
+
+    print(f"Highest accuracy for stock KR is {max_accuracy_KR['max_accuracy']} for W={max_accuracy_KR['w']}")
+    print(f"Highest accuracy for stock SPY is {max_accuracy_SPY['max_accuracy']} for W={max_accuracy_SPY['w']}")
 
 
 
