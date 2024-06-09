@@ -32,12 +32,13 @@ df_KR = add_true_label(df_KR)
 df_SPY = add_true_label(df_SPY)
 
 # Split the KR data into training and testing sets based on the years
-training_stock_df_KR = df_KR[df_KR['Date'] < '2019-01-01'].copy() #Training data
-testing_stock_df_KR = df_KR[df_KR['Date'] >= '2019-01-01'].copy() #Testing data
+training_stock_df_KR = df_KR[df_KR['Date'] < '2017-01-01'].copy() #Training data
+testing_stock_df_KR = df_KR[df_KR['Date'] >= '2017-01-01'].copy() #Testing data
 
 # Split the SPY data into training and testing sets based on the years
-training_stock_df_SPY = df_SPY[df_SPY['Date'] < '2017-01-01'].copy() #Training data
-testing_stock_df_SPY = df_SPY[df_SPY['Date'] >= '2017-01-01'].copy() #Testing data
+
+training_stock_df_SPY = df_SPY[df_SPY['Date'] < '2017-01-01'].copy()
+testing_stock_df_SPY = df_SPY[(df_SPY['Date'] >= '2017-01-01') & (df_SPY['Date'] <= '2018-12-31')].copy()
 
 
 # Calculate the probability that the next day is an "up" day
@@ -185,6 +186,21 @@ def  total_accuracy(df, column_name):
     accuracy = correct_predictions / total_samples * 100
     return accuracy
 
+
+# Predict stock growth, based on W* and Ensemble Label
+def trading(testing_df,column,stock_value):
+    if column not in testing_df.columns:
+         raise ValueError(f"Column {column}' not found in DataFrame")
+    for index, row in testing_df.iterrows():
+        if(row[column]) == '-':
+            testing_df.at[index, f'Stock Value({column})'] = stock_value
+            continue
+        stock_value = round((stock_value * row['Close']) / row['Open'], 2)
+        testing_df.at[index, f'Stock Value({column})'] = stock_value
+    print(f"Final value for {column} : ${stock_value}")
+
+
+
 print("KR stock:")
 up_probability(training_stock_df_KR)
 consecutive_down_up_probability(training_stock_df_KR)
@@ -195,6 +211,7 @@ print("SPY stock:")
 up_probability(training_stock_df_SPY)
 consecutive_down_up_probability(training_stock_df_SPY)
 consecutive_up_up_probability(training_stock_df_SPY)
+
 
 
 W_values = [2, 3, 4]
@@ -253,11 +270,27 @@ accuracy_SPY_down = compute_accuracy_by_sign(testing_stock_df_SPY,'Ensemble Labe
 print(f"Accuracy for ensemble SPY -: {accuracy_SPY_down:.2f}%")
 
 
-csv_filename_testing = 'testing.csv'
-testing_stock_df_SPY.to_csv(csv_filename_testing, index=False)
+column = ['Predicted Label: 2', 'Predicted Label: 3', 'Predicted Label: 4', 'Ensemble Label' ]
+for column_values in column:
 
-csv_filename_training = 'training.csv'
-training_stock_df_SPY.to_csv(csv_filename_training, index=False)
+    trading(testing_stock_df_KR, column_values, 100)
+    print("KR Stock  \n",testing_stock_df_KR)
+
+    trading(testing_stock_df_SPY, column_values, 100)
+    print("SPY stock \n",testing_stock_df_SPY)
+
+
+# csv_filename_testing = 'testing_KR.csv'
+# testing_stock_df_KR.to_csv(csv_filename_testing, index=False)
+
+# csv_filename_training = 'training_KR.csv'
+# training_stock_df_KR.to_csv(csv_filename_training, index=False)
+
+# csv_filename_testing = 'testing_SPY.csv'
+# testing_stock_df_SPY.to_csv(csv_filename_testing, index=False)
+
+# csv_filename_training = 'training.SPY.csv'
+# training_stock_df_SPY.to_csv(csv_filename_training, index=False)
 
 
 
