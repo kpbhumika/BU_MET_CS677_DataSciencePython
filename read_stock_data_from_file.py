@@ -8,6 +8,8 @@ constructs a list of lines
 """
 import os
 import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 
 input_dir = os.getcwd()
@@ -278,6 +280,52 @@ for column_values in column:
 
     trading(testing_stock_df_SPY, column_values, 100)
     print("SPY stock \n",testing_stock_df_SPY)
+
+plt.figure(figsize=(14, 8))
+
+# Plot each strategy
+#SPY
+testing_stock_df_SPY['Date'] = pd.to_datetime(testing_stock_df_SPY['Date'], format='%Y-%m-%d')
+plt.plot(testing_stock_df_SPY['Date'], testing_stock_df_SPY['Stock Value(Predicted Label: 2)'], label='W2', linestyle='-', marker='.')
+plt.plot(testing_stock_df_SPY['Date'], testing_stock_df_SPY['Stock Value(Predicted Label: 3)'], label='W3', linestyle='-', marker='.')
+plt.plot(testing_stock_df_SPY['Date'], testing_stock_df_SPY['Stock Value(Predicted Label: 4)'], label='W4', linestyle='-', marker='.')
+plt.plot(testing_stock_df_SPY['Date'], testing_stock_df_SPY['Stock Value(Ensemble Label)'], label='Ensemble Label', linestyle='-', marker='.')
+
+# Adding titles and labels
+plt.title('Portfolio Growth Over 2 Years for stock SPY')
+plt.xlabel('Date')
+plt.ylabel('Portfolio Value ($)')
+plt.legend()
+plt.grid(True)
+plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
+plt.xticks(rotation=45)
+plt.tight_layout()
+
+plt.show()
+
+# #KR
+testing_stock_df_KR['Date'] = pd.to_datetime(testing_stock_df_KR['Date'], format='%Y-%m-%d')
+
+plt.plot(testing_stock_df_KR['Date'], testing_stock_df_KR['Stock Value(Predicted Label: 2)'], label='W2', linestyle='-', marker='.')
+plt.plot(testing_stock_df_KR['Date'], testing_stock_df_KR['Stock Value(Predicted Label: 3)'], label='W3', linestyle='-', marker='.')
+plt.plot(testing_stock_df_KR['Date'], testing_stock_df_KR['Stock Value(Predicted Label: 4)'], label='W4', linestyle='-', marker='.')
+plt.plot(testing_stock_df_KR['Date'], testing_stock_df_KR['Stock Value(Ensemble Label)'], label='Ensemble Label', linestyle='-', marker='.')
+
+# Adding titles and labels
+plt.title('Portfolio Growth Over 2 Years for stock KR')
+plt.xlabel('Date')
+plt.ylabel('Portfolio Value ($)')
+plt.legend()
+plt.grid(True)
+plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
+plt.xticks(rotation=45)
+plt.tight_layout()
+
+plt.show()
+
+
 
 
 # csv_filename_testing = 'testing_KR.csv'

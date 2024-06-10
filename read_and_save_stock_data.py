@@ -47,7 +47,7 @@ try:
     ticker='KR'
     input_dir = os.getcwd()   # get current directory
     output_file = os.path.join(input_dir, ticker + '.csv')
-    df = get_stock(ticker, start_date='2016-01-01', end_date='2020-12-31',
+    df = get_stock(ticker, start_date='2014-01-01', end_date='2018-12-31',
                s_window=14, l_window=50)
     df.to_csv(output_file, index=False)
     print('wrote ' + str(len(df)) + ' lines to file: ' + output_file)
